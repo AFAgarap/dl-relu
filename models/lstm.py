@@ -164,7 +164,6 @@ class LSTM:
                     if iteration % 25 == 0:
                         validation_accuracies = []
 
-                        # validation_state = sess.run(self.cell.zero_state(self.batch_size, tf.float32))
                         validation_state = sess.run(self.initial_state)
 
                         for feature_batch, label_batch in \
