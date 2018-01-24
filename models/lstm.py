@@ -69,9 +69,22 @@ class LSTM:
             with tf.name_scope('rnn_forward'):
                 outputs, last_state = tf.nn.dynamic_rnn(cell, embed, initial_state=initial_state)
 
-            with tf.name_scope('predictions'):
-                predictions = tf.contrib.layers.fully_connected(outputs[:, -1], 1, activation_fn=tf.nn.relu)
-                tf.summary.histogram('predictions', predictions)
+            with tf.name_scope('dense_layer'):
+                xav_init = tf.contrib.layers.xavier_initializer
+                with tf.name_scope('weights'):
+                    weights = tf.get_variable(name='weights', initializer=xav_init(),
+                                              shape=[self.cell_size, self.num_classes])
+                    self.variable_summaries(weights)
+                with tf.name_scope('biases'):
+                    biases = tf.get_variable(name='biases', initializer=tf.constant([0.1], shape=[self.num_classes]))
+                    self.variable_summaries(biases)
+                with tf.name_scope('linear_function'):
+                    last = outputs[:, -1]
+                    logits = tf.matmul(last, weights) + biases
+                    tf.summary.histogram('logits', logits)
+                with tf.name_scope('predictions'):
+                    predictions = tf.nn.relu(logits, name='predictions')
+                    tf.summary.histogram('predictions', predictions)
 
             with tf.name_scope('metrics'):
                 with tf.name_scope('loss'):
