@@ -31,13 +31,13 @@ CELL_SIZE = 256
 DROPOUT = 0.85
 EMBED_SIZE = 300
 LEARNING_RATE = 1e-2
-NUM_CLASSES = 1
+NUM_CLASSES = 2
 NUM_LAYERS = 2
 SEQUENCE_LENGTH = 200
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='LSTM-RNN for Sentiment Analysis')
+    parser = argparse.ArgumentParser(description='LSTM using ReLU for Sentiment Analysis')
     group = parser.add_argument_group('Arguments')
     group.add_argument('-x', '--dataset_features', required=True, type=str,
                        help='the path where the movie reviews are found')
@@ -80,7 +80,7 @@ def main(argv):
 
     model = LSTM(alpha=argv.learning_rate, batch_size=argv.batch_size, cell_size=argv.cell_size,
                  embed_size=argv.embed_size, num_classes=NUM_CLASSES, num_layers=argv.num_layers,
-                 penalty_parameter=5, sequence_length=SEQUENCE_LENGTH, num_words=num_words)
+                 sequence_length=SEQUENCE_LENGTH, num_words=num_words)
     model.train(epochs=argv.epochs, log_path=argv.log_path, checkpoint_path=argv.checkpoint_path,
                 dropout_rate=argv.dropout_rate, train_features=train_dataset[0], train_labels=train_dataset[1],
                 validation_features=validation_dataset[0], validation_labels=validation_dataset[1])
