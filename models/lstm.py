@@ -29,7 +29,7 @@ import tensorflow as tf
 
 class LSTM:
 
-    def __init__(self, alpha, batch_size, cell_size, embed_size, num_classes, num_layers, num_words, sequence_length):
+    def __init__(self, **kwargs):
         """Instantiates LSTM-RNN class
 
         :param alpha: The learning rate to be used by the model.
@@ -39,14 +39,14 @@ class LSTM:
         :param num_layers: The number of RNN layers.
         :param sequence_length: The length of features to be used.
         """
-        self.alpha = alpha
-        self.batch_size = batch_size
-        self.cell_size = cell_size
-        self.embed_size = embed_size
-        self.num_classes = num_classes
-        self.num_layers = num_layers
-        self.num_words = num_words
-        self.sequence_length = sequence_length
+        self.alpha = kwargs['alpha']
+        self.batch_size = kwargs['batch_size']
+        self.cell_size = kwargs['cell_size']
+        self.embed_size = kwargs['embed_size']
+        self.num_classes = kwargs['num_classes']
+        self.num_layers = kwargs['num_layers']
+        self.num_words = kwargs['num_words']
+        self.sequence_length = kwargs['sequence_length']
 
         def __build__():
 
@@ -55,6 +55,9 @@ class LSTM:
             with tf.name_scope('inputs'):
                 x_input = tf.placeholder(tf.int32, [None, None], name='features')
                 y_input = tf.placeholder(tf.int32, [None, None], name='labels')
+                y_onehot = tf.one_hot(y_input, self.num_classes, 1.0, 0.0)
+                y_onehot = tf.reshape(y_onehot, [-1, self.num_classes])
+                y_onehot = tf.identity(y_onehot, name='labels_onehot')
                 keep_prob = tf.placeholder(tf.float32, name='keep_probability')
 
             with tf.name_scope('embeddings'):
@@ -88,10 +91,10 @@ class LSTM:
 
             with tf.name_scope('metrics'):
                 with tf.name_scope('loss'):
-                    loss = tf.losses.mean_squared_error(y_input, predictions)
+                    loss = tf.losses.huber_loss(predictions=predictions, labels=y_onehot)
                     tf.summary.scalar('loss', loss)
                 with tf.name_scope('accuracy'):
-                    correct_prediction = tf.equal(tf.cast(tf.round(predictions), tf.int32), y_input)
+                    correct_prediction = tf.equal(tf.argmax(predictions, 1), tf.argmax(y_onehot, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
                     tf.summary.scalar('accuracy', accuracy)
 
