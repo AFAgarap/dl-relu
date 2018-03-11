@@ -21,6 +21,9 @@ from __future__ import print_function
 __version__ = '0.1.0'
 __author__ = 'Abien Fred Agarap'
 
+from models.loss import hinge
+from models.loss import mean_squared_error
+from models.loss import squared_hinge
 import numpy as np
 import os
 import sys
@@ -29,98 +32,121 @@ import tensorflow as tf
 
 class GRU:
 
-    def __init__(self, alpha, batch_size, cell_size, embed_size, num_classes, num_layers, num_words, penalty_parameter, sequence_length):
-        """Instantiates GRU-RNN class
+    def __init__(self, alpha, batch_size, num_neurons, **kwargs):
+        """Instantiates GRU-ReLU class
 
-        :param alpha: The learning rate to be used by the model.
-        :param batch_size: The number of data to be used by batch.
-        :param cell_size: The number of GRU cells per RNN state.
-        :param embed_size: The embedding layer size.
-        :param num_layers: The number of RNN layers.
-        :param penalty_parameter: The SVM penalty parameter C.
-        :param sequence_length: The length of features to be used.
+        :param alpha: The learning rate to be used by the neural network.
+        :param batch_size: The number of data per batch to use for training/validation/testing.
+        :param num_neurons: The number of neurons in each cell.
+        :param kwargs:
         """
         self.alpha = alpha
         self.batch_size = batch_size
-        self.cell_size = cell_size
-        self.embed_size = embed_size
-        self.num_classes = num_classes
-        self.num_layers = num_layers
-        self.num_words = num_words
-        self.penalty_parameter = penalty_parameter
-        self.sequence_length = sequence_length
+        self.num_neurons = num_neurons
 
         def __build__():
 
             tf.reset_default_graph()
 
             with tf.name_scope('inputs'):
-                x_input = tf.placeholder(tf.int32, [None, None], name='features')
-                y_input = tf.placeholder(tf.int32, [None, None], name='labels')
-                y_onehot = tf.one_hot(y_input, self.num_classes, 1.0, 0.0)
-                y_onehot = tf.reshape(y_onehot, [-1, self.num_classes])
-                y_onehot = tf.identity(y_onehot, name='labels_onehot')
+                # [BATCH_SIZE, NUM_FEATURES]
+                x_input = tf.placeholder(tf.int32, [None, kwargs['num_features']], name='features')
+
+                # [BATCH_SIZE, NUM_CLASSES]
+                y_input = tf.placeholder(tf.int32, [None, kwargs['num_classes']], name='labels')
+
                 keep_prob = tf.placeholder(tf.float32, name='keep_probability')
 
             with tf.name_scope('embeddings'):
-                embedding = tf.Variable(tf.random_uniform((self.num_words, self.embed_size), -1, 1))
-                embed = tf.nn.embedding_lookup(embedding, x_input)
+                word_vectors = tf.Variable(tf.constant(0.0, shape=[kwargs['vocabulary_size'], kwargs['embedding_dim']]),
+                                           trainable=False, name='word_vectors')
+                embedding_placeholder = tf.placeholder(tf.float32, [kwargs['vocabulary_size'], kwargs['embedding_dim']])
+                embedding_init = word_vectors.assign(embedding_placeholder)
 
             with tf.name_scope('rnn_layers'):
-                cell = tf.contrib.rnn.MultiRNNCell([self.gru_cell(cell_size=self.cell_size, keep_prob=keep_prob)
-                                                    for _ in range(self.num_layers)])
+                cell = tf.contrib.rnn.MultiRNNCell([self.gru_cell(cell_size=num_neurons, keep_prob=keep_prob)
+                                                    for _ in range(kwargs['num_layers'])])
                 initial_state = cell.zero_state(self.batch_size, tf.float32)
 
             with tf.name_scope('rnn_forward'):
-                outputs, last_state = tf.nn.dynamic_rnn(cell, embed, initial_state=initial_state)
+                outputs, last_state = tf.nn.dynamic_rnn(cell, word_vectors, initial_state=initial_state)
 
             with tf.name_scope('dense_layer'):
                 xav_init = tf.contrib.layers.xavier_initializer
                 with tf.name_scope('weights'):
                     weights = tf.get_variable(name='weights', initializer=xav_init(),
-                                              shape=[self.cell_size, self.num_classes])
+                                              shape=[num_neurons, kwargs['num_classes']])
                     self.variable_summaries(weights)
                 with tf.name_scope('biases'):
-                    biases = tf.get_variable(name='biases', initializer=tf.constant([0.1], shape=[self.num_classes]))
+                    biases = tf.get_variable(name='biases',
+                                             initializer=tf.constant([0.1], shape=[kwargs['num_classes']]))
                     self.variable_summaries(biases)
                 with tf.name_scope('linear_function'):
                     last = outputs[:, -1]
                     logits = tf.matmul(last, weights) + biases
                     tf.summary.histogram('logits', logits)
                 with tf.name_scope('predictions'):
-                    predictions = tf.nn.relu(logits, name='predictions')
-                    tf.summary.histogram('predictions', predictions)
+                    prediction = tf.nn.relu(logits, name='predictions')
+                    tf.summary.histogram('predictions', prediction)
 
             with tf.name_scope('metrics'):
                 with tf.name_scope('loss'):
-                    # regularization_loss = tf.reduce_mean(tf.square(weights))
-                    # hinge_loss = tf.reduce_mean(tf.square(tf.maximum(tf.zeros([self.batch_size, self.num_classes]), 1 - tf.cast(y_onehot, tf.float32) * logits)))
-                    # loss = regularization_loss + self.penalty_parameter * hinge_loss
-                    loss = tf.losses.mean_squared_error(predictions=logits, labels=y_onehot)
+                    if kwargs['loss'] == 'hinge':
+                        loss = hinge(labels=y_input, logits=prediction,
+                                     num_classes=kwargs['num_classes'],
+                                     penalty_parameter=kwargs['penalty_parameter'],
+                                     weight=weights)
+                    elif kwargs['loss'] == 'squared_hinge':
+                        loss = squared_hinge(labels=y_input, logits=prediction,
+                                             num_classes=kwargs['num_classes'],
+                                             penalty_parameter=kwargs['penalty_parameter'],
+                                             weight=weights)
+                    elif kwargs['loss'] == 'mean_squared_error':
+                        loss = mean_squared_error(predicted_labels=prediction, target_labels=y_input)
+                    elif kwargs['loss'] == 'binary_crossentropy':
+                        loss = tf.losses.sigmoid_cross_entropy(y_input, prediction)
+                    elif kwargs['loss'] == 'softmax_crossentropy':
+                        loss = tf.losses.softmax_cross_entropy(y_input, prediction)
+                    else:
+                        loss = squared_hinge(labels=y_input, logits=prediction,
+                                             num_classes=kwargs['num_classes'],
+                                             penalty_parameter=kwargs['penalty_parameter'],
+                                             weight=weights)
                     tf.summary.scalar('loss', loss)
                 with tf.name_scope('accuracy'):
-                    correct_prediction = tf.equal(tf.argmax(y_onehot, 1), tf.argmax(predictions, 1))
+                    correct_prediction = tf.equal(tf.argmax(y_input, 1), tf.argmax(prediction, 1))
                     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
                     tf.summary.scalar('accuracy', accuracy)
 
             with tf.name_scope('train'):
-                train_step = tf.train.AdamOptimizer(self.alpha).minimize(loss)
+                if kwargs['optimizer'] == 'sgd':
+                    train_step = tf.train.GradientDescentOptimizer(learning_rate=self.alpha).minimize(loss)
+                elif kwargs['optimizer'] == 'adam':
+                    train_step = tf.train.AdamOptimizer(learning_rate=self.alpha).minimize(loss)
+                elif kwargs['optimizer'] == 'adagrad':
+                    train_step = tf.train.AdagradOptimizer(learning_rate=self.alpha).minimize(loss)
+                elif kwargs['optimizer'] == 'adadelta':
+                    train_step = tf.train.AdadeltaOptimizer(learning_rate=self.alpha).minimize(loss)
+                elif kwargs['optimizer'] == 'rmsprop':
+                    train_step = tf.train.RMSPropOptimizer(learning_rate=self.alpha).minimize(loss)
+                else:
+                    train_step = tf.train.GradientDescentOptimizer(learning_rate=self.alpha).minimize(loss)
 
             merged = tf.summary.merge_all()
 
             self.x_input = x_input
             self.y_input = y_input
-            self.y_onehot = y_onehot
             self.keep_prob = keep_prob
+            self.embedding_placeholder = embedding_placeholder
+            self.embedding_init = embedding_init
             self.cell = cell
             self.initial_state = initial_state
             self.last_state = last_state
-            self.predictions = predictions
+            self.prediction = prediction
             self.loss = loss
             self.accuracy = accuracy
             self.train_step = train_step
             self.merged = merged
-            self.embed = embed
 
         sys.stdout.write('<log>Building graph...\n')
         __build__()
@@ -147,6 +173,8 @@ class GRU:
         with tf.Session() as sess:
 
             sess.run(initializer_op)
+
+            sess.run(self.embedding_init, feed_dict={self.embedding_placeholder: kwargs['embedding_matrix']})
 
             iteration = 1
 
