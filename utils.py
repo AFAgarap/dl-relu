@@ -123,7 +123,7 @@ def vectorize_text(text_path, embeddings_path, max_length=300):
     """
     features = clean_text(text_path=text_path)
 
-    assert embeddings_path != None, 'Path to embeddings must be provided.'
+    assert embeddings_path is not None, 'Path to embeddings must be provided.'
     padded_features, tokens, vocabulary_size = tokenize_text(raw_text=features)
     embedding_matrix = load_embeddings(embeddings_path, max_length, tokens, vocabulary_size)
     return padded_features, embedding_matrix, vocabulary_size
