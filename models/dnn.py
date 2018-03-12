@@ -21,6 +21,8 @@ __author__ = 'Abien Fred Agarap'
 from models.loss import hinge
 from models.loss import mean_squared_error
 from models.loss import squared_hinge
+import numpy as np
+import os
 import sys
 import tensorflow as tf
 
@@ -49,7 +51,7 @@ class DNN:
 
                 # [NUM_FEATURES, NUM_NEURONS]
                 first_layer = {'h1_weights': self.initialize_weight(name='h1_weights',
-                                                                    shape=[kwargs['feature_size'], num_neurons[0]]),
+                                                                    shape=[kwargs['num_features'], num_neurons[0]]),
                                'h1_biases': self.initialize_bias(name='h1_biases', shape=num_neurons[0])}
 
                 # [NUM_NEURONS, NUM_NEURONS]
@@ -107,7 +109,7 @@ class DNN:
                                                  weight=third_layer['h3_weights'])
                     with tf.name_scope('accuracy'):
                         correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y_input, 1))
-                        accuracy = tf.reduce_mean(correct_prediction)
+                        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
                 with tf.name_scope('train_operation'):
                     if kwargs['optimizer'] == 'sgd':
@@ -123,31 +125,109 @@ class DNN:
                     else:
                         train_step = tf.train.GradientDescentOptimizer(learning_rate=self.alpha).minimize(loss)
 
+            merged = tf.summary.merge_all()
+
             self.x_input = x_input
             self.y_input = y_input
             self.logits = third_layer_logits
             self.predictions = prediction
             self.loss = loss
             self.accuracy = accuracy
-            self.train_op = train_step
+            self.train_step = train_step
+            self.merged = merged
 
         sys.stdout.write('<log>Building graph...\n')
         __build__()
         sys.stdout.write('</log>\n')
 
-    def train(self, **kwargs):
-        init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
+    def train(self, epochs=1, **kwargs):
+        """Trains the instantiated GRU-RNN object
+
+        :param epochs: The number of passes through the entire dataset.
+        :param kwargs:
+        :return:
+        """
+
+        initializer_op = tf.group(tf.global_variables_initializer())
+
+        saver = tf.train.Saver()
+
+        logs_path_train = os.path.join(kwargs['log_path'], 'training')
+        log_path_test = os.path.join(kwargs['log_path'], 'testing')
+
+        train_writer = tf.summary.FileWriter(logdir=logs_path_train, graph=tf.get_default_graph())
+        test_writer = tf.summary.FileWriter(logdir=log_path_test, graph=tf.get_default_graph())
 
         with tf.Session() as sess:
-            sess.run(init_op)
 
-            # for step in range()
+            sess.run(initializer_op)
 
-    def initialize_weight(self, name, shape):
+            iteration = 1
+
+            for epoch in range(epochs):
+
+                for index, (feature_batch, label_batch) in \
+                        enumerate(self.next_batch(kwargs['train_features'], kwargs['train_labels'], self.batch_size),
+                                  1):
+
+                    feed_dict = {self.x_input: feature_batch, self.y_input: label_batch}
+
+                    _, cost, accuracy = sess.run([self.train_step, self.loss, self.accuracy], feed_dict=feed_dict)
+
+                    # train_writer.add_summary(summary, iteration)
+
+                    if iteration % 5 == 0 and iteration > 0:
+                        print('Epoch : {} / {}'.format(epoch + 1, epochs),
+                              'Iteration : {}'.format(iteration),
+                              'Accuracy : {}'.format(accuracy),
+                              'Train loss : {}'.format(cost))
+
+                    if iteration % 25 == 0:
+                        validation_accuracies = []
+
+                        for feature_batch, label_batch in \
+                                self.next_batch(kwargs['validation_features'], kwargs['validation_labels'],
+                                                self.batch_size):
+                            feed_dict = {self.x_input: feature_batch, self.y_input: label_batch}
+
+                            # summary, batch_accuracy = sess.run([self.merged, self.accuracy], feed_dict=feed_dict)
+                            batch_accuracy = sess.run([self.accuracy], feed_dict=feed_dict)
+                            validation_accuracies.append(batch_accuracy)
+
+                        print('Validation accuracy : {}'.format(np.mean(validation_accuracies)))
+
+                    iteration += 1
+
+                    # test_writer.add_summary(summary, iteration)
+
+                    saver.save(sess, os.path.join(kwargs['checkpoint_path'], 'sentiment.ckpt'))
+
+                saver.save(sess, os.path.join(kwargs['checkpoint_path'], 'sentiment.ckpt'))
+
+    @staticmethod
+    def initialize_weight(name, shape):
         xav_init = tf.contrib.layers.xavier_initializer
         initial_values = tf.get_variable(name=name, initializer=xav_init(), shape=shape)
         return initial_values
 
-    def initialize_bias(self, name, shape):
-        initial_values = tf.constant([0.1], shape=shape)
+    @staticmethod
+    def initialize_bias(name, shape):
+        initial_values = tf.constant([0.1], shape=[shape], name=name)
         return initial_values
+
+    @staticmethod
+    def next_batch(features, labels, batch_size=100):
+        """Returns the next batch of data
+
+        :param features: The dataset features.
+        :param labels: The dataset labels.
+        :param batch_size: The number of data to return
+        :return:
+        """
+
+        num_batches = len(features) // batch_size
+
+        feature_batch, label_batch = features[:num_batches * batch_size], labels[:num_batches * batch_size]
+
+        for index in range(0, len(features), batch_size):
+            yield feature_batch[index:(index + batch_size)], label_batch[index:(index + batch_size)]
