@@ -44,6 +44,14 @@ class DNN:
         assert type(kwargs['dropout_rate']) is float, \
             'Expected data type : float, but {} is {}'.format(kwargs['dropout_rate'], type(kwargs['dropout_rate']))
 
+        assert 'loss' in kwargs, 'KeyNotFound : {}'.format('loss')
+        assert type(kwargs['loss']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['loss'], type(kwargs['loss']))
+
+        assert 'optimizer' in kwargs, 'KeyNotFound : {}'.format('optimizer')
+        assert type(kwargs['optimizer']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['optimizer'], type(kwargs['optimizer']))
+
         assert 'num_classes' in kwargs, 'KeyNotFound : {}'.format('num_classes')
         assert type(kwargs['num_features']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['num_classes'], type(kwargs['num_classes']))
@@ -53,12 +61,14 @@ class DNN:
             'Expected data type : int, but {} is {}'.format(kwargs['num_features'], type(kwargs['num_features']))
 
         assert 'num_neurons' in kwargs, 'KeyNotFound : {}'.format('num_neurons')
-        assert type(kwargs['num_neurons']) is int, \
-            'Expected data type : int, but {} is {}'.format(kwargs['num_neurons'], type(kwargs['num_neurons']))
+        assert type(kwargs['num_neurons']) is list, \
+            'Expected data type : list, but {} is {}'.format(kwargs['num_neurons'], type(kwargs['num_neurons']))
 
         def __graph__():
             model = Sequential()
-            model.add(Dense(kwargs['num_neurons'][0], activation=kwargs['activation'], input_dim=kwargs['num_features']))
+            model.add(Dense(kwargs['num_neurons'][0],
+                            activation=kwargs['activation'],
+                            input_dim=kwargs['num_features']))
             model.add(Dropout(kwargs['dropout_rate']))
 
             for num_neurons in kwargs['num_neurons'][1:]:
@@ -83,6 +93,24 @@ class DNN:
         assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
         assert type(kwargs['batch_size']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
+
+        assert 'n_splits' in kwargs, 'KeyNotFound : {}'.format('n_splits')
+        assert type(kwargs['n_splits']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['n_splits'], type(kwargs['n_splits']))
+
+        assert 'log_path' in kwargs, 'KeyNotFound : {}'.format('log_path')
+        assert type(kwargs['log_path']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['log_path'], type(kwargs['log_path']))
+
+        assert 'validation_split' in kwargs, 'KeyNotFound : {}'.format('validation_split')
+        assert type(kwargs['validation_split']) is float, \
+            'Expected data type : float, but {} is {}'.format(kwargs['validation_split'],
+                                                              type(kwargs['validation_split']))
+
+        assert 'verbose' in kwargs, 'KeyNotFound : {}'.format('verbose')
+        assert 0 <= kwargs['verbose'] <= 2, 'ValueError : {} must be >= 0 and <= 2'.format('verbose')
+        assert type(kwargs['verbose']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['verbose'], type(kwargs['verbose']))
 
         seed = 7
         kfold = StratifiedKFold(n_splits=kwargs['n_splits'], shuffle=True, random_state=seed)
@@ -116,6 +144,10 @@ class DNN:
         assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
         assert type(kwargs['batch_size']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
+
+        assert 'class_names' in kwargs, 'KeyNotFound : {}'.format('class_names')
+        assert type(kwargs['class_names']) is list, \
+            'Expected data type : list, but {} is {}'.format(kwargs['class_names'], type(kwargs['class_names']))
 
         test_features, test_labels = kwargs['test_features'], kwargs['test_labels']
 
