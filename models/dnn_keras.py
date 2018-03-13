@@ -18,10 +18,13 @@ from __future__ import print_function
 __version__ = '0.1.0'
 __author__ = 'Abien Fred Agarap'
 
+from keras import backend as K
 from keras import callbacks
 from keras.models import Sequential
+from keras.layers import Activation
 from keras.layers import Dense
 from keras.layers import Dropout
+from keras.utils.generic_utils import get_custom_objects
 import numpy as np
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
@@ -65,14 +68,22 @@ class DNN:
             'Expected data type : list, but {} is {}'.format(kwargs['num_neurons'], type(kwargs['num_neurons']))
 
         def __graph__():
+
+            get_custom_objects().update({'swish': Activation(DNN.swish)})
+
+            if kwargs['activation'] == 'swish':
+                activation = DNN.swish
+            else:
+                activation = kwargs['activation']
+
             model = Sequential()
             model.add(Dense(kwargs['num_neurons'][0],
-                            activation=kwargs['activation'],
+                            activation=activation,
                             input_dim=kwargs['num_features']))
             model.add(Dropout(kwargs['dropout_rate']))
 
             for num_neurons in kwargs['num_neurons'][1:]:
-                model.add(Dense(num_neurons, activation=kwargs['activation']))
+                model.add(Dense(num_neurons, activation=activation))
                 model.add(Dropout(kwargs['dropout_rate']))
 
             model.add(Dense(kwargs['num_classes'], activation='relu'))
@@ -164,3 +175,11 @@ class DNN:
         conf_matrix = confusion_matrix(np.argmax(test_labels, axis=1), test_predictions)
 
         return report, conf_matrix
+
+    @staticmethod
+    def swish(x):
+        """Returns non-linearity through Swish
+
+        :param x: The input vector for non-linearity
+        """
+        return K.sigmoid(x) * x
