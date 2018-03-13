@@ -21,6 +21,8 @@ __author__ = 'Abien Fred Agarap'
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
+import numpy as np
+from sklearn.model_selection import StratifiedKFold
 import sys
 
 
@@ -34,10 +36,6 @@ class DNN:
         assert 'activation' in kwargs, 'KeyNotFound : {}'.format('activation')
         assert type(kwargs['activation']) is str, \
             'Expected data type : str, but {} is {}'.format(kwargs['activation'], type(kwargs['activation']))
-
-        assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
-        assert type(kwargs['batch_size']) is int,\
-            'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
 
         assert 'dropout_rate' in kwargs, 'KeyNotFound : {}'.format('dropout_rate')
         assert type(kwargs['dropout_rate']) is float, \
@@ -71,3 +69,32 @@ class DNN:
         sys.stdout.write('<log> Building graph...\n')
         __graph__()
         sys.stdout.write('</log>\n')
+
+    def train(self, **kwargs):
+        """Trains the instantiated DNN-ReLU class
+
+        :param kwargs:
+        :return:
+        """
+
+        assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
+        assert type(kwargs['batch_size']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
+
+        seed = 7
+        kfold = StratifiedKFold(n_splits=kwargs['n_splits'], shuffle=True, random_state=seed)
+        cvscores = []
+
+        train_features, train_labels = kwargs['train_features'], kwargs['train_labels']
+
+        for train, validate in kfold.split(train_features, np.argmax(train_labels, 1)):
+            self.model.fit(train_features[train], train_labels[train],
+                           epochs=kwargs['epochs'], batch_size=kwargs['batch_size'], verbose=kwargs['verbose'],
+                           validation_split=kwargs['validation_split'])
+            score = self.model.evaluate(train_features[validate], train_labels[validate],
+                                        verbose=kwargs['verbose'])
+            print('{} : {}, {} : {}'.format(self.model.metrics_names[0], score[0],
+                                            self.model.metrics_names[1], score[1]))
+            cvscores.append(score[1])
+        print('==========')
+        print('CV acc : {}, CV stddev : +/- {}'.format(np.mean(cvscores), np.std(cvscores)))
