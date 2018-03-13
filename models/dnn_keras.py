@@ -22,6 +22,8 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 import numpy as np
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import StratifiedKFold
 import sys
 
@@ -98,3 +100,30 @@ class DNN:
             cvscores.append(score[1])
         print('==========')
         print('CV acc : {}, CV stddev : +/- {}'.format(np.mean(cvscores), np.std(cvscores)))
+
+    def evaluate(self, **kwargs):
+        """Evaluates the trained model
+
+        :param kwargs:
+        :return:
+        """
+
+        assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
+        assert type(kwargs['batch_size']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
+
+        test_features, test_labels = kwargs['test_features'], kwargs['test_labels']
+
+        score, accuracy = self.model.evaluate(test_features=test_features, test_labels=test_labels,
+                                              batch_size=kwargs['batch_size'])
+
+        print('Test loss : {}\nTest accuracy : {}'.format(score, accuracy))
+
+        test_predictions = self.model.predict(test_features)
+        test_predictions = np.argmax(test_predictions, axis=1)
+
+        class_names = kwargs['class_names']
+        report = classification_report(np.argmax(test_labels, axis=1), test_predictions, target_names=class_names)
+        conf_matrix = confusion_matrix(np.argmax(test_labels, axis=1), test_predictions)
+
+        return report, conf_matrix
