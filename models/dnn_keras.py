@@ -18,6 +18,7 @@ from __future__ import print_function
 __version__ = '0.1.0'
 __author__ = 'Abien Fred Agarap'
 
+from keras import callbacks
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
@@ -89,10 +90,14 @@ class DNN:
 
         train_features, train_labels = kwargs['train_features'], kwargs['train_labels']
 
+        tbCallback = callbacks.TensorBoard(log_dir=kwargs['log_path'], histogram_freq=0,
+                                           write_graph=True, write_images=True)
+
         for train, validate in kfold.split(train_features, np.argmax(train_labels, 1)):
             self.model.fit(train_features[train], train_labels[train],
                            epochs=kwargs['epochs'], batch_size=kwargs['batch_size'], verbose=kwargs['verbose'],
-                           validation_split=kwargs['validation_split'])
+                           validation_split=kwargs['validation_split'],
+                           callbacks=tbCallback)
             score = self.model.evaluate(train_features[validate], train_labels[validate],
                                         verbose=kwargs['verbose'])
             print('{} : {}, {} : {}'.format(self.model.metrics_names[0], score[0],
