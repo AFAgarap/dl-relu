@@ -57,8 +57,15 @@ class DNN:
 
         def __graph__():
             model = Sequential()
-            model.add(Dense(kwargs['num_neurons'], activation=kwargs['activation'], input_dim=kwargs['num_features']))
+            model.add(Dense(kwargs['num_neurons'][0], activation=kwargs['activation'], input_dim=kwargs['num_features']))
             model.add(Dropout(kwargs['dropout_rate']))
+
+            for num_neurons in kwargs['num_neurons'][1:]:
+                model.add(Dense(num_neurons, activation=kwargs['activation']))
+                model.add(Dropout(kwargs['dropout_rate']))
+
+            model.add(Dense(kwargs['num_classes'], activation='relu'))
+
             model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
 
         sys.stdout.write('<log> Building graph...\n')
