@@ -125,7 +125,7 @@ class DNN:
         assert type(kwargs['verbose']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['verbose'], type(kwargs['verbose']))
 
-        seed = 7
+        seed = 10
         kfold = StratifiedKFold(n_splits=kwargs['n_splits'], shuffle=True, random_state=seed)
         cvscores = []
 
@@ -162,10 +162,12 @@ class DNN:
         assert type(kwargs['class_names']) is list, \
             'Expected data type : list, but {} is {}'.format(kwargs['class_names'], type(kwargs['class_names']))
 
+        assert 'test_features' in kwargs, 'KeyNotFound : {}'.format('test_features')
+        assert 'test_labels' in kwargs, 'KeyNotFound : {}'.format('test_labels')
+
         test_features, test_labels = kwargs['test_features'], kwargs['test_labels']
 
-        score, accuracy = self.model.evaluate(test_features=test_features, test_labels=test_labels,
-                                              batch_size=kwargs['batch_size'])
+        score, accuracy = self.model.evaluate(test_features, test_labels)
 
         print('Test loss : {}\nTest accuracy : {}'.format(score, accuracy))
 
