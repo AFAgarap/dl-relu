@@ -163,7 +163,12 @@ class DNN:
             'Expected data type : list, but {} is {}'.format(kwargs['class_names'], type(kwargs['class_names']))
 
         assert 'test_features' in kwargs, 'KeyNotFound : {}'.format('test_features')
+        assert type(kwargs['test_features']).__module__ is np.__name__,\
+            'Expected data type : numpy, but {} is {}'.format(kwargs['test_features'], type(kwargs['test_features']))
+
         assert 'test_labels' in kwargs, 'KeyNotFound : {}'.format('test_labels')
+        assert type(kwargs['test_labels']).__module__ is np.__name__, \
+            'Expected data type : numpy, but {} is {}'.format(kwargs['test_labels'], type(kwargs['test_labels']))
 
         test_features, test_labels = kwargs['test_features'], kwargs['test_labels']
 
