@@ -90,6 +90,8 @@ class DNN:
 
             model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
 
+            self.model = model
+
         sys.stdout.write('<log> Building graph...\n')
         __graph__()
         sys.stdout.write('</log>\n')
@@ -136,7 +138,7 @@ class DNN:
             self.model.fit(train_features[train], train_labels[train],
                            epochs=kwargs['epochs'], batch_size=kwargs['batch_size'], verbose=kwargs['verbose'],
                            validation_split=kwargs['validation_split'],
-                           callbacks=tbCallback)
+                           callbacks=[tbCallback])
             score = self.model.evaluate(train_features[validate], train_labels[validate],
                                         verbose=kwargs['verbose'])
             print('{} : {}, {} : {}'.format(self.model.metrics_names[0], score[0],
