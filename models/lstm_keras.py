@@ -86,7 +86,7 @@ class LstmRNN:
         sys.stdout.write('</log>\n')
 
     def train(self, **kwargs):
-        """Trains the instantiated DNN-ReLU class
+        """Trains the instantiated LSTM-ReLU class
 
         :param kwargs:
         :return:
