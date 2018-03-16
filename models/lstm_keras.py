@@ -36,6 +36,30 @@ class LstmRNN:
         :param kwargs:
         """
 
+        assert 'dropout_rate' in kwargs, 'KeyNotFound : {}'.format('dropout_rate')
+        assert type(kwargs['dropout_rate']) is float, \
+            'Expected data type : float, but {} is {}'.format(kwargs['dropout_rate'], type(kwargs['dropout_rate']))
+
+        assert 'max_length' in kwargs, 'KeyNotFound : {}'.format('max_length')
+        assert type(kwargs['max_length']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['max_length'], type(kwargs['max_length']))
+
+        assert 'num_classes' in kwargs, 'KeyNotFound : {}'.format('num_classes')
+        assert type(kwargs['num_classes']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['num_classes'], type(kwargs['num_classes']))
+
+        assert 'num_neurons' in kwargs, 'KeyNotFound : {}'.format('num_neurons')
+        assert type(kwargs['num_neurons']) is list, \
+            'Expected data type : list, but {} is {}'.format(kwargs['num_neurons'], type(kwargs['num_neurons']))
+
+        assert 'trainable' in kwargs, 'KeyNotFound : {}'.format('trainable')
+        assert type(kwargs['trainable']) is bool, \
+            'Expected data type : bool, but {} is {}'.format(kwargs['trainable'], type(kwargs['trainable']))
+
+        assert 'vocabulary_size' in kwargs, 'KeyNotFound : {}'.format('vocabulary_size')
+        assert type(kwargs['vocabulary_size']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['vocabulary_size'], type(kwargs['vocabulary_size']))
+
         def __build__():
             model = Sequential()
             e = Embedding(kwargs['vocabulary_size'], kwargs['max_length'], weights=[kwargs['embedding_matrix']],
