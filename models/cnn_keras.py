@@ -80,6 +80,8 @@ class CNN:
 
             model.compile(loss=kwargs['loss'], optimizer=optimizer)
 
+            self.model = model
+
         sys.stdout.write('<log> Building graph...\n')
         __build__()
         sys.stdout.write('</log>\n')
