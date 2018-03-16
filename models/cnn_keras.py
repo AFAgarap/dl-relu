@@ -26,13 +26,35 @@ class CNN:
         :param kwargs:
         """
 
+        assert 'activation' in kwargs, 'KeyNotFound : {}'.format('activation')
+        assert type(kwargs['activation']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['activation'], type(kwargs['activation']))
+
+        assert 'dropout_rate' in kwargs, 'KeyNotFound : {}'.format('dropout_rate')
+        assert type(kwargs['dropout_rate']) is float, \
+            'Expected data type : float, but {} is {}'.format(kwargs['dropout_rate'], type(kwargs['dropout_rate']))
+
+        assert 'loss' in kwargs, 'KeyNotFound : {}'.format('loss')
+        assert type(kwargs['loss']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['loss'], type(kwargs['loss']))
+
+        assert 'optimizer' in kwargs, 'KeyNotFound : {}'.format('optimizer')
+        assert type(kwargs['optimizer']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['optimizer'], type(kwargs['optimizer']))
+
+        assert 'num_classes' in kwargs, 'KeyNotFound : {}'.format('num_classes')
+        assert type(kwargs['num_features']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['num_classes'], type(kwargs['num_classes']))
+
+        assert 'input_shape' in kwargs, 'KeyNotFound : {}'.format('input_shape')
+        assert type(kwargs['input_shape']) is tuple, \
+            'Expected data type : tuple, but {} is {}'.format(kwargs['input_shape'], type(kwargs['input_shape']))
+
         def __build__():
 
             get_custom_objects().update({'swish': Activation(CNN.swish)})
 
             model = Sequential()
-            # input: 100x100 images with 3 channels -> (100, 100, 3) tensors.
-            # this applies 32 convolution filters of size 3x3 each.
             model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
             model.add(Conv2D(32, (3, 3), activation='relu'))
             model.add(MaxPooling2D(pool_size=(2, 2)))
