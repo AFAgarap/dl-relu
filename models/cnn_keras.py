@@ -54,24 +54,33 @@ class CNN:
 
             get_custom_objects().update({'swish': Activation(CNN.swish)})
 
+            if kwargs['activation'] == 'swish':
+                activation = CNN.swish
+            else:
+                activation = kwargs['activation']
+
             model = Sequential()
-            model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
-            model.add(Conv2D(32, (3, 3), activation='relu'))
+            model.add(Conv2D(32, (3, 3), activation=activation, input_shape=kwargs['input_shape']))
+            model.add(Conv2D(32, (3, 3), activation=activation))
             model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Dropout(0.25))
 
-            model.add(Conv2D(64, (3, 3), activation='relu'))
-            model.add(Conv2D(64, (3, 3), activation='relu'))
+            model.add(Conv2D(64, (3, 3), activation=activation))
+            model.add(Conv2D(64, (3, 3), activation=activation))
             model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Dropout(0.25))
 
             model.add(Flatten())
-            model.add(Dense(256, activation='relu'))
+            model.add(Dense(256, activation=activation))
             model.add(Dropout(0.5))
-            model.add(Dense(10, activation='relu'))
+            model.add(Dense(kwargs['num_classes'], activation='relu'))
 
-            sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-            model.compile(loss='categorical_crossentropy', optimizer=sgd)
+            if kwargs['optimizer'] == 'sgd':
+                optimizer = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+            else:
+                optimizer = kwargs['optimizer']
+                
+            model.compile(loss=kwargs['loss'], optimizer=optimizer)
 
         sys.stdout.write('<log> Building graph...\n')
         __build__()
