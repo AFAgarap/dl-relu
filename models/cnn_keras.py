@@ -171,4 +171,8 @@ class CNN:
 
     @staticmethod
     def swish(x):
+        """Returns non-linearity through Swish
+
+        :param x: The input vector for non-linearity
+        """
         return K.sigmoid(x) * x
