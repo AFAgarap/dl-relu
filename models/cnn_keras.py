@@ -30,25 +30,21 @@ class CNN:
         assert type(kwargs['activation']) is str, \
             'Expected data type : str, but {} is {}'.format(kwargs['activation'], type(kwargs['activation']))
 
-        assert 'dropout_rate' in kwargs, 'KeyNotFound : {}'.format('dropout_rate')
-        assert type(kwargs['dropout_rate']) is float, \
-            'Expected data type : float, but {} is {}'.format(kwargs['dropout_rate'], type(kwargs['dropout_rate']))
+        assert 'input_shape' in kwargs, 'KeyNotFound : {}'.format('input_shape')
+        assert type(kwargs['input_shape']) is tuple, \
+            'Expected data type : tuple, but {} is {}'.format(kwargs['input_shape'], type(kwargs['input_shape']))
 
         assert 'loss' in kwargs, 'KeyNotFound : {}'.format('loss')
         assert type(kwargs['loss']) is str, \
             'Expected data type : str, but {} is {}'.format(kwargs['loss'], type(kwargs['loss']))
 
-        assert 'optimizer' in kwargs, 'KeyNotFound : {}'.format('optimizer')
-        assert type(kwargs['optimizer']) is str, \
-            'Expected data type : str, but {} is {}'.format(kwargs['optimizer'], type(kwargs['optimizer']))
-
         assert 'num_classes' in kwargs, 'KeyNotFound : {}'.format('num_classes')
         assert type(kwargs['num_features']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['num_classes'], type(kwargs['num_classes']))
 
-        assert 'input_shape' in kwargs, 'KeyNotFound : {}'.format('input_shape')
-        assert type(kwargs['input_shape']) is tuple, \
-            'Expected data type : tuple, but {} is {}'.format(kwargs['input_shape'], type(kwargs['input_shape']))
+        assert 'optimizer' in kwargs, 'KeyNotFound : {}'.format('optimizer')
+        assert type(kwargs['optimizer']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['optimizer'], type(kwargs['optimizer']))
 
         def __build__():
 
@@ -79,7 +75,7 @@ class CNN:
                 optimizer = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
             else:
                 optimizer = kwargs['optimizer']
-                
+
             model.compile(loss=kwargs['loss'], optimizer=optimizer)
 
         sys.stdout.write('<log> Building graph...\n')
