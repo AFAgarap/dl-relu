@@ -16,6 +16,8 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 from keras.utils.generic_utils import get_custom_objects
 import numpy as np
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import StratifiedKFold
 import sys
 
@@ -129,8 +131,43 @@ class CNN:
         print('==========')
         print('CV acc : {}, CV stddev : +/- {}'.format(np.mean(cvscores), np.std(cvscores)))
 
-    def evaluate(self):
-        pass
+    def evaluate(self, **kwargs):
+        """Evaluates the trained model
+
+        :param kwargs:
+        :return:
+        """
+
+        assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
+        assert type(kwargs['batch_size']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
+
+        assert 'class_names' in kwargs, 'KeyNotFound : {}'.format('class_names')
+        assert type(kwargs['class_names']) is list, \
+            'Expected data type : list, but {} is {}'.format(kwargs['class_names'], type(kwargs['class_names']))
+
+        assert 'test_features' in kwargs, 'KeyNotFound : {}'.format('test_features')
+        assert type(kwargs['test_features']).__module__ is np.__name__,\
+            'Expected data type : numpy, but {} is {}'.format(kwargs['test_features'], type(kwargs['test_features']))
+
+        assert 'test_labels' in kwargs, 'KeyNotFound : {}'.format('test_labels')
+        assert type(kwargs['test_labels']).__module__ is np.__name__, \
+            'Expected data type : numpy, but {} is {}'.format(kwargs['test_labels'], type(kwargs['test_labels']))
+
+        test_features, test_labels = kwargs['test_features'], kwargs['test_labels']
+
+        score, accuracy = self.model.evaluate(test_features, test_labels)
+
+        print('Test loss : {}\nTest accuracy : {}'.format(score, accuracy))
+
+        test_predictions = self.model.predict(test_features)
+        test_predictions = np.argmax(test_predictions, axis=1)
+
+        class_names = kwargs['class_names']
+        report = classification_report(np.argmax(test_labels, axis=1), test_predictions, target_names=class_names)
+        conf_matrix = confusion_matrix(np.argmax(test_labels, axis=1), test_predictions)
+
+        return report, conf_matrix
 
     @staticmethod
     def swish(x):
