@@ -15,6 +15,8 @@ from keras.layers import MaxPooling2D
 from keras.models import Sequential
 from keras.optimizers import SGD
 from keras.utils.generic_utils import get_custom_objects
+import numpy as np
+from sklearn.model_selection import StratifiedKFold
 import sys
 
 
@@ -82,8 +84,48 @@ class CNN:
         __build__()
         sys.stdout.write('</log>\n')
 
-    def train(self):
-        pass
+    def train(self, **kwargs):
+        """Trains the instantiated DNN-ReLU class
+
+        :param kwargs:
+        :return:
+        """
+
+        assert 'batch_size' in kwargs, 'KeyNotFound : {}'.format('batch_size')
+        assert type(kwargs['batch_size']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['batch_size'], type(kwargs['batch_size']))
+
+        assert 'n_splits' in kwargs, 'KeyNotFound : {}'.format('n_splits')
+        assert type(kwargs['n_splits']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['n_splits'], type(kwargs['n_splits']))
+
+        assert 'validation_split' in kwargs, 'KeyNotFound : {}'.format('validation_split')
+        assert type(kwargs['validation_split']) is float, \
+            'Expected data type : float, but {} is {}'.format(kwargs['validation_split'],
+                                                              type(kwargs['validation_split']))
+
+        assert 'verbose' in kwargs, 'KeyNotFound : {}'.format('verbose')
+        assert 0 <= kwargs['verbose'] <= 2, 'ValueError : {} must be >= 0 and <= 2'.format('verbose')
+        assert type(kwargs['verbose']) is int, \
+            'Expected data type : int, but {} is {}'.format(kwargs['verbose'], type(kwargs['verbose']))
+
+        seed = 10
+        kfold = StratifiedKFold(n_splits=kwargs['n_splits'], shuffle=True, random_state=seed)
+        cvscores = []
+
+        train_features, train_labels = kwargs['train_features'], kwargs['train_labels']
+
+        for train, validate in kfold.split(train_features, np.argmax(train_labels, 1)):
+            self.model.fit(train_features[train], train_labels[train],
+                           epochs=kwargs['epochs'], batch_size=kwargs['batch_size'], verbose=kwargs['verbose'],
+                           validation_split=kwargs['validation_split'])
+            score = self.model.evaluate(train_features[validate], train_labels[validate],
+                                        verbose=kwargs['verbose'])
+            print('{} : {}, {} : {}'.format(self.model.metrics_names[0], score[0],
+                                            self.model.metrics_names[1], score[1]))
+            cvscores.append(score[1])
+        print('==========')
+        print('CV acc : {}, CV stddev : +/- {}'.format(np.mean(cvscores), np.std(cvscores)))
 
     def evaluate(self):
         pass
