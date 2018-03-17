@@ -58,7 +58,7 @@ class CNN:
             'Expected data type : str, but {} is {}'.format(kwargs['loss'], type(kwargs['loss']))
 
         assert 'num_classes' in kwargs, 'KeyNotFound : {}'.format('num_classes')
-        assert type(kwargs['num_features']) is int, \
+        assert type(kwargs['num_classes']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['num_classes'], type(kwargs['num_classes']))
 
         assert 'optimizer' in kwargs, 'KeyNotFound : {}'.format('optimizer')
@@ -95,7 +95,7 @@ class CNN:
             else:
                 optimizer = kwargs['optimizer']
 
-            model.compile(loss=kwargs['loss'], optimizer=optimizer)
+            model.compile(loss=kwargs['loss'], optimizer=optimizer, metrics=['accuracy'])
 
             self.model = model
 
