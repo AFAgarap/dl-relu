@@ -43,6 +43,10 @@ class DNN:
         assert type(kwargs['activation']) is str, \
             'Expected data type : str, but {} is {}'.format(kwargs['activation'], type(kwargs['activation']))
 
+        assert 'classifier' in kwargs, 'KeyNotFound : {}'.format('classifier')
+        assert type(kwargs['classifier']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['classifier'], type(kwargs['classifier']))
+
         assert 'dropout_rate' in kwargs, 'KeyNotFound : {}'.format('dropout_rate')
         assert type(kwargs['dropout_rate']) is float, \
             'Expected data type : float, but {} is {}'.format(kwargs['dropout_rate'], type(kwargs['dropout_rate']))
@@ -86,7 +90,7 @@ class DNN:
                 model.add(Dense(num_neurons, activation=activation))
                 model.add(Dropout(kwargs['dropout_rate']))
 
-            model.add(Dense(kwargs['num_classes'], activation='relu'))
+            model.add(Dense(kwargs['num_classes'], activation=kwargs['classifier']))
 
             model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
 
