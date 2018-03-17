@@ -19,7 +19,6 @@ __version__ = '0.1.0'
 __author__ = 'Abien Fred Agarap'
 
 from keras import backend as K
-from keras import callbacks
 from keras.models import Sequential
 from keras.layers import Activation
 from keras.layers import Dense
@@ -115,10 +114,6 @@ class DNN:
         assert type(kwargs['n_splits']) is int, \
             'Expected data type : int, but {} is {}'.format(kwargs['n_splits'], type(kwargs['n_splits']))
 
-        assert 'log_path' in kwargs, 'KeyNotFound : {}'.format('log_path')
-        assert type(kwargs['log_path']) is str, \
-            'Expected data type : str, but {} is {}'.format(kwargs['log_path'], type(kwargs['log_path']))
-
         assert 'validation_split' in kwargs, 'KeyNotFound : {}'.format('validation_split')
         assert type(kwargs['validation_split']) is float, \
             'Expected data type : float, but {} is {}'.format(kwargs['validation_split'],
@@ -135,14 +130,10 @@ class DNN:
 
         train_features, train_labels = kwargs['train_features'], kwargs['train_labels']
 
-        tbCallback = callbacks.TensorBoard(log_dir=kwargs['log_path'], histogram_freq=0,
-                                           write_graph=True, write_images=True)
-
         for train, validate in kfold.split(train_features, np.argmax(train_labels, 1)):
             self.model.fit(train_features[train], train_labels[train],
                            epochs=kwargs['epochs'], batch_size=kwargs['batch_size'], verbose=kwargs['verbose'],
-                           validation_split=kwargs['validation_split'],
-                           callbacks=[tbCallback])
+                           validation_split=kwargs['validation_split'])
             score = self.model.evaluate(train_features[validate], train_labels[validate],
                                         verbose=kwargs['verbose'])
             print('{} : {}, {} : {}'.format(self.model.metrics_names[0], score[0],
