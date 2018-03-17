@@ -49,6 +49,10 @@ class CNN:
         assert type(kwargs['activation']) is str, \
             'Expected data type : str, but {} is {}'.format(kwargs['activation'], type(kwargs['activation']))
 
+        assert 'classifier' in kwargs, 'KeyNotFound : {}'.format('classifier')
+        assert type(kwargs['classifier']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['classifier'], type(kwargs['classifier']))
+
         assert 'input_shape' in kwargs, 'KeyNotFound : {}'.format('input_shape')
         assert type(kwargs['input_shape']) is tuple, \
             'Expected data type : tuple, but {} is {}'.format(kwargs['input_shape'], type(kwargs['input_shape']))
@@ -88,7 +92,7 @@ class CNN:
             model.add(Flatten())
             model.add(Dense(256, activation=activation))
             model.add(Dropout(0.5))
-            model.add(Dense(kwargs['num_classes'], activation='relu'))
+            model.add(Dense(kwargs['num_classes'], activation=kwargs['classifier']))
 
             if kwargs['optimizer'] == 'sgd':
                 optimizer = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
