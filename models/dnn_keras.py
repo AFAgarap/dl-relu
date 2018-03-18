@@ -33,7 +33,7 @@ import sys
 
 class DNN:
 
-    def __init__(self, **kwargs):
+    def __init__(self, return_summary=False, **kwargs):
         """Instantiates DNN-ReLU class
 
         :param kwargs:
@@ -94,6 +94,9 @@ class DNN:
             model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
 
             self.model = model
+
+            if return_summary:
+                print(model.summary())
 
         sys.stdout.write('<log> Building graph...\n')
         __graph__()

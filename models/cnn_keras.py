@@ -39,7 +39,7 @@ import sys
 
 class CNN:
 
-    def __init__(self, **kwargs):
+    def __init__(self, return_summary=False, **kwargs):
         """Instantiates VGG-like Convnet from Keras [https://keras.io/getting-started/sequential-model-guide/]
 
         :param kwargs:
@@ -100,6 +100,9 @@ class CNN:
                 optimizer = kwargs['optimizer']
 
             model.compile(loss=kwargs['loss'], optimizer=optimizer, metrics=['accuracy'])
+
+            if return_summary:
+                print(model.summary())
 
             self.model = model
 
