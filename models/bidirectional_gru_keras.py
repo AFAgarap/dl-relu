@@ -41,6 +41,10 @@ class BiGruRNN:
         :param kwargs:
         """
 
+        assert 'classifier' in kwargs, 'KeyNotFound : {}'.format('classifier')
+        assert type(kwargs['classifier']) is str, \
+            'Expected data type : str, but {} is {}'.format(kwargs['classifier'], type(kwargs['classifier']))
+
         assert 'dropout_rate' in kwargs, 'KeyNotFound : {}'.format('dropout_rate')
         assert type(kwargs['dropout_rate']) is float, \
             'Expected data type : float, but {} is {}'.format(kwargs['dropout_rate'], type(kwargs['dropout_rate']))
