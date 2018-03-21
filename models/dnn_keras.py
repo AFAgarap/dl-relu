@@ -19,6 +19,7 @@ __version__ = '0.1.0'
 __author__ = 'Abien Fred Agarap'
 
 from keras import backend as K
+from keras.optimizers import SGD
 from keras.models import Sequential
 from keras.layers import Activation
 from keras.layers import Dense
@@ -91,7 +92,12 @@ class DNN:
 
             model.add(Dense(kwargs['num_classes'], activation=kwargs['classifier']))
 
-            model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
+            if kwargs['optimizer'] == 'sgd':
+                optimizer = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+            else:
+                optimizer = kwargs['optimizer']
+
+            model.compile(loss=kwargs['loss'], optimizer=optimizer, metrics=['accuracy'])
 
             self.model = model
 
