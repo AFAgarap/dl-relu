@@ -35,7 +35,7 @@ import sys
 
 class BiLstmRNN:
 
-    def __init__(self, **kwargs):
+    def __init__(self, return_summary=False, **kwargs):
         """Instantiates Bidirectional LSTM-RNN class
 
         :param kwargs:
@@ -85,6 +85,9 @@ class BiLstmRNN:
             model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
 
             self.model = model
+
+            if return_summary:
+                print(model.summary())
 
         sys.stdout.write('<log>Building graph...\n')
         __build__()

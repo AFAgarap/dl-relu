@@ -35,7 +35,7 @@ import sys
 
 class BiGruRNN:
 
-    def __init__(self, **kwargs):
+    def __init__(self, return_summary=False, **kwargs):
         """Instantiates Bidirectional GRU-RNN class
 
         :param kwargs:
@@ -85,6 +85,9 @@ class BiGruRNN:
             model.compile(loss=kwargs['loss'], optimizer=kwargs['optimizer'], metrics=['accuracy'])
 
             self.model = model
+
+            if return_summary:
+                print(model.summary())
 
         sys.stdout.write('<log>Building graph...\n')
         __build__()
