@@ -1,0 +1,5 @@
+Keras==2.1.2
+numpy==1.14.0
+tensorflow_gpu==1.4.1
+scikit_learn==0.19.1
+tensorflow==1.7.0
