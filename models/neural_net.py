@@ -38,6 +38,12 @@ class NeuralNet(tf.keras.Model):
         self.output_layer = tf.keras.layers.Dense(
                 units=kwargs['num_classes'], activation=tf.nn.softmax
                 )
+        self.optimizer = tf.optimizers.SGD(
+                learning_rate=1e-1,
+                momentum=9e-1,
+                decay=1e-6,
+                nesterov=True
+                )
 
     @tf.function
     def call(self, features):
