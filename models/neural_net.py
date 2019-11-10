@@ -25,33 +25,22 @@ import tensorflow as tf
 class NeuralNet(tf.keras.Model):
     def __init__(self, **kwargs):
         super(NeuralNet, self).__init__()
-        self.num_layers = kwargs['num_layers']
-        self.neurons = kwargs['neurons']
-        self.hidden_layers = []
-        self.activation = kwargs['activation']
-        for index in range(self.num_layers):
-            self.hidden_layers.append(
-                    tf.keras.layers.Dense(
-                        units=self.neurons[index], activation=self.activation
-                        )
-                    )
-        self.output_layer = tf.keras.layers.Dense(
-                units=kwargs['num_classes'], activation=tf.nn.softmax
-                )
-        self.optimizer = tf.optimizers.SGD(
-                learning_rate=1e-1,
-                momentum=9e-1,
-                decay=1e-6,
-                nesterov=True
-                )
+        self.hidden_layer_1 = tf.keras.layers.Dense(
+            units=kwargs['units'][0],
+            activation=kwargs['activation'],
+            kernel_initializer=kwargs['initializer']
+        )
+        self.hidden_layer_2 = tf.keras.layers.Dense(
+            units=kwargs['units'][1],
+            activation=kwargs['activation'],
+            kernel_initializer=kwargs['initializer']
+        )
+        self.output_layer = tf.keras.layers.Dense(units=kwargs['num_classes'])
+        self.optimizer = tf.optimizers.SGD(learning_rate=3e-4, momentum=9e-1)
 
     @tf.function
     def call(self, features):
-        activations = []
-        for index in range(self.num_layers):
-            if index == 0:
-                activations.append(self.hidden_layers[index](features))
-            else:
-                activations.append(self.hidden_layers[index](activations[index - 1]))
-        output = self.output_layer(activations[-1])
+        activation = self.hidden_layer_1(features)
+        activation = self.hidden_layer_2(activation)
+        output = self.output_layer(activation)
         return output
