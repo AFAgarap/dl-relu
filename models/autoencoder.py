@@ -12,6 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """TensorFlow 2.0 implementation of a vanilla autoencoder"""
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
+__author__ = "Abien Fred Agarap"
+__version__ = "1.0.0"
+
 import tensorflow as tf
 
 
