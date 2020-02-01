@@ -49,3 +49,12 @@ class NeuralNet(tf.keras.Model):
 def loss_fn(logits, labels):
     softmax_loss = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
     return tf.reduce_mean(softmax_loss)
+
+
+def train_step(model, loss, features, labels):
+    with tf.GradientTape() as tape:
+        logits = model(features)
+        train_loss = loss(logits=logits, labels=labels)
+    gradients = tape.gradient(train_loss, model.trainable_variables)
+    model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+    return train_loss
