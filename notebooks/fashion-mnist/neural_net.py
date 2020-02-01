@@ -40,3 +40,8 @@ class NeuralNet(tf.keras.Model):
         activation = self.hidden_layer_2(activation)
         output = self.output_layer(activation)
         return output
+
+
+def loss_fn(logits, labels):
+    softmax_loss = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=labels)
+    return tf.reduce_mean(softmax_loss)
