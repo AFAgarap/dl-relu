@@ -32,7 +32,9 @@ def tokenize_text(text, max_length=50):
 
     pad_id, start_id, oov_id, index_offset = 0, 1, 2, 2
 
-    word_inverted_index = {value + index_offset: key for key, value in tokenizer.word_index.items()}
+    word_inverted_index = {
+        value + index_offset: key for key, value in tokenizer.word_index.items()
+    }
     vocabulary = {value: key for key, value in word_inverted_index.items()}
 
     return padded_text, vocabulary, vocabulary_size, tokenizer
@@ -40,26 +42,24 @@ def tokenize_text(text, max_length=50):
 
 def remove_stopwords(text):
     filtered_text = []
-    stop_words = set(stopwords.words('english'))
+    stop_words = set(stopwords.words("english"))
     for token in text.split():
         if token not in stop_words:
             filtered_text.append(token)
-    return ' '.join([token for token in filtered_text])
+    return " ".join([token for token in filtered_text])
 
 
 def load_embeddings(filename, vocabulary_size, tokenizer, max_length=50):
-    with open(filename, 'r') as file:
+    with open(filename, "r") as file:
         data = file.readlines()
 
     embeddings = {}
 
     for line in data:
-        word, vector = line.split(' ', 1)
+        word, vector = line.split(" ", 1)
         embeddings[word] = np.array([float(element) for element in vector.split()])
 
-    print(
-        '[INFO] Loaded word vectors : {}'.format(len(embeddings))
-    )
+    print("[INFO] Loaded word vectors : {}".format(len(embeddings)))
 
     embedding_matrix = np.zeros((vocabulary_size, max_length))
 
@@ -69,7 +69,9 @@ def load_embeddings(filename, vocabulary_size, tokenizer, max_length=50):
             embedding_matrix[index] = embedding_vector
 
     print(
-        '[INFO] Loaded word vectors for vocabulary with size : {}'.format(embedding_matrix.shape[0])
+        "[INFO] Loaded word vectors for vocabulary with size : {}".format(
+            embedding_matrix.shape[0]
+        )
     )
 
     return embedding_matrix

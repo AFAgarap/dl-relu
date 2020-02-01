@@ -22,25 +22,25 @@ class NeuralNet(tf.keras.Model):
     def __init__(self, **kwargs):
         super(NeuralNet, self).__init__()
         self.embedding_layer = tf.keras.layers.Embedding(
-            input_dim=kwargs['vocabulary_size'],
-            output_dim=kwargs['max_length'],
-            input_length=kwargs['max_length'],
-            embeddings_initializer=kwargs['embedding_initializer'],
-            trainable=False
+            input_dim=kwargs["vocabulary_size"],
+            output_dim=kwargs["max_length"],
+            input_length=kwargs["max_length"],
+            embeddings_initializer=kwargs["embedding_initializer"],
+            trainable=False,
         )
         self.flatten = tf.keras.layers.Flatten()
         self.hidden_layer_1 = tf.keras.layers.Dense(
-            units=kwargs['units'][0],
-            activation=kwargs['activation'],
-            kernel_initializer=kwargs['initializer']
+            units=kwargs["units"][0],
+            activation=kwargs["activation"],
+            kernel_initializer=kwargs["initializer"],
         )
         self.hidden_layer_2 = tf.keras.layers.Dense(
-            units=kwargs['units'][1],
-            activation=kwargs['activation'],
-            kernel_initializer=kwargs['initializer']
+            units=kwargs["units"][1],
+            activation=kwargs["activation"],
+            kernel_initializer=kwargs["initializer"],
         )
         self.output_layer = tf.keras.layers.Dense(
-            units=kwargs['num_classes'], activation=tf.nn.sigmoid
+            units=kwargs["num_classes"], activation=tf.nn.sigmoid
         )
 
     @tf.function
