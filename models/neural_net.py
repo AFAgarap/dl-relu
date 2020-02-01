@@ -58,3 +58,37 @@ def train_step(model, loss, features, labels):
     gradients = tape.gradient(train_loss, model.trainable_variables)
     model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return train_loss
+
+
+def train(model, loss_fn, dataset, epochs):
+    epoch_accuracy = []
+    epoch_loss = []
+    for epoch in range(epochs):
+        train_accuracy = []
+        train_loss = 0
+        for batch_features, batch_labels in dataset:
+            batch_features += tf.random.normal(
+                stddev=(1.0 / (1.0 + epoch) ** 0.55), shape=batch_features.shape
+            )
+            loss = train_step(model, loss_fn, batch_features, batch_labels)
+
+            accuracy = tf.metrics.Accuracy()
+            predictions = tf.nn.softmax(model(batch_features))
+            accuracy(tf.argmax(predictions, 1), tf.argmax(batch_labels, 1))
+
+            train_loss += loss
+            train_accuracy.append(accuracy.result())
+
+        epoch_loss.append(tf.reduce_mean(train_loss))
+        epoch_accuracy.append(tf.reduce_mean(train_accuracy))
+
+        if (epoch != 0) and ((epoch + 1) % 50 == 0):
+            print(
+                "epoch {}/{} : mean loss = {}, mean accuracy = {}".format(
+                    epoch + 1,
+                    epochs,
+                    tf.reduce_mean(train_loss),
+                    tf.reduce_mean(train_accuracy),
+                )
+            )
+    return epoch_accuracy, epoch_loss
