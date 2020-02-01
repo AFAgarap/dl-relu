@@ -13,6 +13,7 @@
 # limitations under the License.
 """Implementation of utility functions for text classification"""
 import csv
+from nltk.corpus import stopwords
 import numpy as np
 import tensorflow as tf
 
