@@ -12,11 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Implementation of utility functions for text classification"""
+import csv
 import numpy as np
 import tensorflow as tf
 
 __author__ = "Abien Fred Agarap"
 __version__ = "1.0.0"
+
+
+def load_data(filepath):
+    with open(filepath, "r") as file:
+        csv_reader = csv.DictReader(file)
+        reviews = []
+        labels = []
+        for row in csv_reader:
+            reviews.append(row["review"])
+            labels.append(row["polarity"])
+    return reviews, labels
 
 
 def tokenize_text(text, max_length=50):
