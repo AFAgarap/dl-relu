@@ -26,22 +26,20 @@ class AE(tf.keras.Model):
     def __init__(self, **kwargs):
         super(AE, self).__init__()
         self.encoder_layer = tf.keras.layers.Dense(
-            units=kwargs['units'],
-            activation=kwargs['activation'],
-            kernel_initializer=kwargs['initializer']
+            units=kwargs["units"],
+            activation=kwargs["activation"],
+            kernel_initializer=kwargs["initializer"],
         )
         self.code = tf.keras.layers.Dense(
-            units=kwargs['code_dim'],
-            activation=tf.nn.sigmoid,
+            units=kwargs["code_dim"], activation=tf.nn.sigmoid
         )
         self.decoder_layer = tf.keras.layers.Dense(
-            units=kwargs['units'],
-            activation=kwargs['activation'],
-            kernel_initializer=kwargs['initializer']
+            units=kwargs["units"],
+            activation=kwargs["activation"],
+            kernel_initializer=kwargs["initializer"],
         )
         self.reconstructed = tf.keras.layers.Dense(
-            units=kwargs['original_dim'],
-            activation=tf.nn.sigmoid
+            units=kwargs["original_dim"], activation=tf.nn.sigmoid
         )
 
     @tf.function
